@@ -7,6 +7,20 @@ from pymodelprune.demo_models import DEMO_MODELS, TinyCNN
 
 runner = CliRunner()
 
+# Rich draws usage errors in a panel and wraps them at the terminal width, so a message
+# can end up split across bordered lines. Widen the terminal for every CLI test and strip
+# the box drawing, so these assertions test the message and not the formatting.
+_BOX_DRAWING = str.maketrans("", "", "\u2502\u256d\u256e\u2570\u256f\u2500")
+
+
+@pytest.fixture(autouse=True)
+def _wide_terminal(monkeypatch):
+    monkeypatch.setenv("COLUMNS", "200")
+
+
+def output_of(result) -> str:
+    return " ".join(result.output.translate(_BOX_DRAWING).split())
+
 
 def test_demo_runs():
     result = runner.invoke(app, ["demo", "--model", "cnn", "--runs", "5"])
@@ -142,7 +156,7 @@ def test_sensitivity_command(tmp_path, monkeypatch):
 def fails_cleanly(args: list[str], expected: str) -> bool:
     """A user error is one readable message and a non-zero exit code, never a traceback."""
     result = runner.invoke(app, args)
-    text = " ".join(result.output.split())
+    text = output_of(result)
     clean = result.exit_code != 0 and (
         result.exception is None or isinstance(result.exception, SystemExit)
     )

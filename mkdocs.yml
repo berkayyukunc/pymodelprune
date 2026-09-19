@@ -1,4 +1,6 @@
 site_name: pymodelprune
+repo_url: https://github.com/berkayyukunc/pymodelprune
+repo_name: berkayyukunc/pymodelprune
 site_description: Prune and quantize PyTorch models, then measure what you actually gained.
 copyright: Copyright &copy; 2026 pymodelprune contributors
 

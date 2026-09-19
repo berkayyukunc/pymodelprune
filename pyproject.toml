@@ -24,6 +24,12 @@ dependencies = [
     "rich>=13",
 ]
 
+[project.urls]
+Homepage = "https://github.com/berkayyukunc/pymodelprune"
+Repository = "https://github.com/berkayyukunc/pymodelprune"
+Issues = "https://github.com/berkayyukunc/pymodelprune/issues"
+Changelog = "https://github.com/berkayyukunc/pymodelprune/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 quant = ["torchao>=0.10"]
 onnx = ["onnx>=1.16", "onnxruntime>=1.18", "onnxscript>=0.1"]

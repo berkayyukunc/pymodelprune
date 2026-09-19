@@ -50,7 +50,7 @@ raises an error that names the `pip install` line to run.
 Development setup with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-git clone <repository-url> && cd pymodelprune
+git clone https://github.com/berkayyukunc/pymodelprune.git && cd pymodelprune
 uv sync                              # core + all extras + dev tools + torchvision for examples
 uv run pymodelprune demo --model cnn
 ```
