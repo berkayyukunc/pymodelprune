@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.egg-info/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# model files and datasets produced while experimenting
+*.pt
+*.onnx
+data/
+
+# personal plan and study notes
+notlar/
+
+# built documentation
+site/
+
