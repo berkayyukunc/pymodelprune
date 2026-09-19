@@ -57,6 +57,27 @@ uv run pymodelprune demo --model cnn
 
 ## Quickstart
 
+### See it work in one minute
+
+```bash
+uv run python examples/train_fashion_mnist.py   # trains two small models, under a minute
+uv run python examples/sweep_structured.py --model cnn --finetune
+```
+
+The second script removes channels at four ratios, fine-tunes for one epoch and prints:
+
+```text
+Model        Params    MB   FLOPs  p50 ms    Acc    Fid   Size  Speed
+original      50.4K  0.21    7.7M   0.114  89.2%      -  1.00x  1.00x
+-30% ch +ft   31.4K  0.13    3.8M   0.101  90.8%  91.2%  0.63x  1.13x
+-50% ch +ft   20.6K  0.09    2.1M   0.091  89.0%  87.6%  0.42x  1.25x
+-70% ch +ft   11.2K  0.05  830.1K   0.086  89.4%  90.5%  0.24x  1.33x
+-90% ch +ft    3.2K  0.02  111.7K   0.074  83.9%  86.7%  0.09x  1.55x
+```
+
+Seven out of ten channels can go and, after one epoch of fine-tuning, the model is as
+accurate as it started: a quarter of the size, a ninth of the arithmetic.
+
 ### Python
 
 ```python
