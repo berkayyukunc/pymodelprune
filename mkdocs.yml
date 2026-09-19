@@ -1,0 +1,43 @@
+site_name: pymodelprune
+site_description: Prune and quantize PyTorch models, then measure what you actually gained.
+copyright: Copyright &copy; 2026 pymodelprune contributors
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+nav:
+  - Overview: index.md
+  - Quickstart: quickstart.md
+  - How it works: how-it-works.md
+  - CLI: cli.md
+  - API reference: api.md
+  - Limitations: limitations.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
