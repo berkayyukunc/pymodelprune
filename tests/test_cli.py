@@ -1,4 +1,5 @@
 import contextlib
+import re
 
 import pytest
 import torch
@@ -9,10 +10,12 @@ from pymodelprune.demo_models import DEMO_MODELS, TinyCNN
 
 runner = CliRunner()
 
-# Rich draws usage errors in a panel and wraps them at the terminal width, so a message
-# can end up split across bordered lines. Widen the terminal for every CLI test and strip
-# the box drawing, so these assertions test the message and not the formatting.
+# Rich formats usage errors, and the formatting lands in the middle of the words these
+# tests look for: it wraps the message in a box at the terminal width, and it highlights
+# option names, which puts colour codes inside "--data". CI forces colour on, so these
+# assertions were green locally and red there. Strip both before matching.
 _BOX_DRAWING = str.maketrans("", "", "\u2502\u256d\u256e\u2570\u256f\u2500")
+_ANSI_CODES = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]")
 
 
 @pytest.fixture(autouse=True)
@@ -156,7 +159,8 @@ def cli_text(result) -> str:
     streams = [result.output]
     with contextlib.suppress(ValueError):  # click only separates them when asked to
         streams.append(result.stderr)
-    return " ".join(" ".join(streams).translate(_BOX_DRAWING).split())
+    plain = _ANSI_CODES.sub("", " ".join(streams)).translate(_BOX_DRAWING)
+    return " ".join(plain.split())
 
 
 def fails_cleanly(args: list[str], expected: str) -> bool:
