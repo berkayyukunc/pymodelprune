@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+
+      # default groups: dev tools, torchvision for the examples, and every optional extra
+      - name: Install the project with all extras
+        run: uv sync
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Test
+        run: uv run pytest -q
+
+  core-only:
+    # Proves the optional dependencies are optional: no torchao, onnx, onnxruntime
+    # or torchvision. Tests that need them must skip, not fail.
+    name: test (core dependencies only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install the core package and the dev group only
+        run: uv sync --no-default-groups --group dev
+
+      - name: Optional dependencies are absent
+        run: |
+          uv run --no-sync python - <<'EOF'
+          import importlib.util
+
+          present = [
+              name
+              for name in ("torchao", "onnx", "onnxruntime", "torchvision")
+              if importlib.util.find_spec(name) is not None
+          ]
+          assert not present, f"unexpected optional packages installed: {present}"
+          EOF
+
+      - name: Test
+        run: uv run --no-sync pytest -q
