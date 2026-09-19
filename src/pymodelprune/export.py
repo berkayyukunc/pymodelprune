@@ -11,7 +11,6 @@ import re
 import warnings
 from collections.abc import Iterable, Iterator
 from pathlib import Path
-from typing import Self
 
 import torch
 from torch import nn
@@ -91,7 +90,8 @@ class OrtModule(nn.Module):
         """
         self.session = None
 
-    def __enter__(self) -> Self:
+    # Annotated by name rather than typing.Self, which needs Python 3.11.
+    def __enter__(self) -> OrtModule:  # noqa: PYI034
         return self
 
     def __exit__(self, *exc_info: object) -> None:

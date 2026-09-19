@@ -32,7 +32,13 @@ Changelog = "https://github.com/berkayyukunc/pymodelprune/blob/main/CHANGELOG.md
 
 [project.optional-dependencies]
 quant = ["torchao>=0.10"]
-onnx = ["onnx>=1.16", "onnxruntime>=1.18", "onnxscript>=0.1"]
+# onnxruntime stopped shipping wheels for Python 3.10; the core package still supports it,
+# and require_onnx() explains the missing extra instead of failing at install time.
+onnx = [
+    "onnx>=1.16",
+    "onnxruntime>=1.18; python_version >= '3.11'",
+    "onnxscript>=0.1",
+]
 all = ["pymodelprune[quant,onnx]"]
 
 [project.scripts]

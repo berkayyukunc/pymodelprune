@@ -1,3 +1,5 @@
+import contextlib
+
 import pytest
 import torch
 from typer.testing import CliRunner
@@ -16,10 +18,6 @@ _BOX_DRAWING = str.maketrans("", "", "\u2502\u256d\u256e\u2570\u256f\u2500")
 @pytest.fixture(autouse=True)
 def _wide_terminal(monkeypatch):
     monkeypatch.setenv("COLUMNS", "200")
-
-
-def output_of(result) -> str:
-    return " ".join(result.output.translate(_BOX_DRAWING).split())
 
 
 def test_demo_runs():
@@ -153,14 +151,25 @@ def test_sensitivity_command(tmp_path, monkeypatch):
     assert "features.0" in result.output and (tmp_path / "new_dir" / "s.json").exists()
 
 
+def cli_text(result) -> str:
+    """Everything the command printed, as one line without Rich's box drawing."""
+    streams = [result.output]
+    with contextlib.suppress(ValueError):  # click only separates them when asked to
+        streams.append(result.stderr)
+    return " ".join(" ".join(streams).translate(_BOX_DRAWING).split())
+
+
 def fails_cleanly(args: list[str], expected: str) -> bool:
     """A user error is one readable message and a non-zero exit code, never a traceback."""
     result = runner.invoke(app, args)
-    text = output_of(result)
-    clean = result.exit_code != 0 and (
-        result.exception is None or isinstance(result.exception, SystemExit)
+    text = cli_text(result)
+    assert result.exit_code != 0, f"expected a failure for {args}, got:\n{text}"
+    assert result.exception is None or isinstance(result.exception, SystemExit), (
+        f"expected a clean exit for {args}, got {result.exception!r}"
     )
-    return clean and expected in text and "Traceback" not in text
+    assert "Traceback" not in text, f"traceback leaked for {args}:\n{text}"
+    assert expected in text, f"expected {expected!r} in the output of {args}, got:\n{text}"
+    return True
 
 
 @pytest.mark.parametrize(
