@@ -37,6 +37,8 @@ to ONNX Runtime and quantized to INT8. Measured on an Apple Silicon CPU, batch s
 
 ## Documentation
 
+Published at **<https://berkayyukunc.github.io/pymodelprune/>**, and in `docs/`:
+
 - [Quickstart](docs/quickstart.md): install, the first `optimize` call, the CLI.
 - [How it works](docs/how-it-works.md): the dependency graph, the importance criteria,
   the budget search, and why static INT8 goes through ONNX Runtime.
