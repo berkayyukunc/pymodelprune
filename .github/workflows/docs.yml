@@ -21,6 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # enablement: true turns Pages on for the repository the first time this runs,
+      # so publishing the docs needs no click in the repository settings.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:

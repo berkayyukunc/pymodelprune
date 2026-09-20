@@ -452,7 +452,8 @@ uv run python examples/resnet18_cifar10.py          # downloads CIFAR-10, trains
 
 The same pages are built into a site with MkDocs: `pip install mkdocs-material`, then
 `mkdocs serve` to read them locally, or `mkdocs build` for a static copy. A workflow
-publishes them on every push to `main`.
+publishes them to GitHub Pages on every push to `main`, and turns Pages on the first
+time it runs.
 
 ## License
 
