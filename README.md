@@ -35,6 +35,15 @@ to ONNX Runtime and quantized to INT8. Measured on an Apple Silicon CPU, batch s
 15x smaller and 7.2x faster for 1.6 accuracy points, reproducible with
 `examples/resnet18_cifar10.py`. [Full stage-by-stage breakdown below.](#5-resnet-18-on-cifar-10-end-to-end-with-onnx-runtime-static-int8)
 
+## Documentation
+
+- [Quickstart](docs/quickstart.md): install, the first `optimize` call, the CLI.
+- [How it works](docs/how-it-works.md): the dependency graph, the importance criteria,
+  the budget search, and why static INT8 goes through ONNX Runtime.
+- [CLI reference](docs/cli.md) and [API reference](docs/api.md).
+- [Limitations](docs/limitations.md): what this cannot do, and why.
+- [`examples/`](examples/): every table below is the output of one of these scripts.
+
 ## Install
 
 ```bash
@@ -441,7 +450,9 @@ uv run python examples/budget_search_demo.py --max-drop 0.01
 uv run python examples/resnet18_cifar10.py          # downloads CIFAR-10, trains ResNet-18
 ```
 
-Documentation is built with MkDocs: `pip install mkdocs-material`, then `mkdocs serve`.
+The same pages are built into a site with MkDocs: `pip install mkdocs-material`, then
+`mkdocs serve` to read them locally, or `mkdocs build` for a static copy. A workflow
+publishes them on every push to `main`.
 
 ## License
 
