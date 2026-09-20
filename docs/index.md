@@ -52,7 +52,9 @@ can be regenerated with a script from `examples/`.
   `[quant]` (torchao), `[onnx]` (onnx, onnxruntime, onnxscript).
 - **Speed is measured on CPU**, with warm-up runs discarded and the median reported.
   Candidates are timed in alternating blocks rather than one after the other, so a drift in
-  machine load cannot masquerade as a speedup. Tests never assert on latency.
+  machine load cannot masquerade as a speedup. Tests never assert on latency: they check
+  that the measurement gives every candidate the same treatment and waits for the device,
+  never that one duration beats another.
 
 ## Where to go next
 

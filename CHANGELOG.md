@@ -83,6 +83,11 @@ Versions 0.1.0 to 0.4.0 were developed together and share one date.
 
 ### Fixed
 
+- The timing tests no longer compare durations. One of them asserted that identical models
+  come out within 25% of each other, which is false on a shared CI machine (1.7x apart on
+  one run) and contradicts what this project tells its users about latency numbers. They
+  now check the mechanism: every candidate gets the same passes in the same cycles, and
+  accelerator work is waited for.
 - Models quantized by the torchao backend can be saved (`save_model`,
   `OptimizationResult.save`, `--out`); `save_model` writes atomically.
 - `finetune_fn` after unstructured pruning no longer destroys the sparsity.

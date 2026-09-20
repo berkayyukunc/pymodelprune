@@ -1,4 +1,4 @@
-import time
+import itertools
 
 import numpy as np
 import pytest
@@ -57,21 +57,23 @@ def test_profile_model_sparsity():
     assert result.sparsity == pytest.approx(0.5)
 
 
-@pytest.mark.skipif(not torch.backends.mps.is_available(), reason="needs an MPS device")
-def test_latency_waits_for_the_accelerator():
-    model = nn.Sequential(*[nn.Linear(2048, 2048) for _ in range(24)]).to("mps").eval()
-    example = torch.randn(64, 2048, device="mps")
-    measured = measure_latency(model, example, warmup=3, runs=10).median_ms
-    timings = []
-    with torch.inference_mode():
-        for _ in range(10):
-            torch.mps.synchronize()
-            start = time.perf_counter()
-            model(example)
-            torch.mps.synchronize()
-            timings.append((time.perf_counter() - start) * 1000)
-    manual = sorted(timings)[len(timings) // 2]
-    assert manual / 3 < measured < manual * 3
+@pytest.mark.parametrize(("device", "attribute"), [("cuda", "cuda"), ("mps", "mps"), ("cpu", None)])
+def test_latency_waits_for_the_accelerator(monkeypatch, device, attribute):
+    """Accelerators queue work, so a timer that does not wait measures the queueing.
+
+    Checked by counting the waits rather than by comparing durations: the mechanism is
+    what matters, and this project tells its users not to trust a latency number as proof.
+    """
+    waits = []
+    if attribute is not None:
+        monkeypatch.setattr(
+            getattr(torch, attribute), "synchronize", lambda *a, **k: waits.append(device)
+        )
+    example = torch.zeros(1, 4)
+    monkeypatch.setattr(type(example), "device", property(lambda self: torch.device(device)))
+    profile_module.measure_latency_interleaved([nn.Linear(4, 4)], example, warmup=1, runs=5)
+    # one wait before the timer starts and one after the pass, for each timed run
+    assert len(waits) == (10 if attribute else 0)
 
 
 def test_profile_serializes_the_weights_once(monkeypatch):
@@ -149,12 +151,22 @@ def test_interleaved_warmup_runs_before_any_timing():
     assert log[:6] == ["a", "a", "a", "b", "b", "b"]  # every model is warm before the first timing
 
 
-def test_identical_models_get_comparable_timings():
-    torch.manual_seed(0)
-    models = [nn.Sequential(*[nn.Linear(512, 512) for _ in range(4)]).eval() for _ in range(3)]
-    timings = profile_module.measure_latency_interleaved(models, torch.randn(8, 512), runs=30)
-    medians = [item.median_ms for item in timings]
-    assert max(medians) / min(medians) < 1.25
+def test_every_model_is_measured_the_same_way():
+    """The candidates must get identical treatment: same passes, same cycles, same turns.
+
+    An earlier version of this test compared the measured medians of identical models
+    instead. It was flaky on shared CI machines (1.7x apart on one run), and asserting on
+    latency is exactly what this project tells its users not to do.
+    """
+    log: list[str] = []
+    models = [Recorder(name, log) for name in "abc"]
+    stats = profile_module.measure_latency_interleaved(
+        models, torch.randn(1, 64), warmup=2, runs=12, block=4
+    )
+    assert [item.runs for item in stats] == [12, 12, 12]
+    assert call_blocks(log[6:]) == [4] * 9  # 3 cycles x 3 models, after the warm-up
+    turns = [name for name, _ in itertools.groupby(log[6:])]
+    assert turns == list("abc") * 3
 
 
 def test_interleaved_rejects_bad_arguments():
